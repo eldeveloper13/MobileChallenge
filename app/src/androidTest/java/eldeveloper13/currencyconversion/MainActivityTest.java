@@ -30,6 +30,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -64,8 +65,10 @@ public class MainActivityTest {
         TestComponent component = (TestComponent) app.getAppComponent();
         component.inject(this);
 
-        List<ConversionRate> mockRates = getMockRates();
-        Mockito.when(mRateProvider.getConversionRates()).thenReturn(mockRates);
+        List<ConversionRate> mockCADRates = getMockCADRates();
+        Mockito.when(mRateProvider.getConversionRates("CAD")).thenReturn(mockCADRates);
+        List<ConversionRate> mockUSDRates = getMockUSDRates();
+        Mockito.when(mRateProvider.getConversionRates("USD")).thenReturn(mockUSDRates);
         Mockito.when(mRateProvider.getRatesSymbol()).thenReturn(Arrays.asList("CAD", "USD", "GBP"));
         activityRule.launchActivity(new Intent());
     }
@@ -99,11 +102,49 @@ public class MainActivityTest {
         onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("£0.00"))));
     }
 
-    private List<ConversionRate> getMockRates() {
+    @Test
+    public void enterBaseValue_thenSwitchCurrency_shouldUpdateDisplayValues() {
+        onView(withId(R.id.base_value_edit)).perform(replaceText("100.00"));
+        onView(withId(R.id.base_currency_spinner)).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is("USD"))).perform(click());
+
+        onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("CA$66.00"))));
+        onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("$100.00"))));
+        onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("£133.00"))));
+    }
+
+    @Test
+    public void onSwitchCurrency_thenEnterBaseValue_shouldDisplayValues() {
+        onView(withId(R.id.base_currency_spinner)).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is("USD"))).perform(click());
+        onView(withId(R.id.base_value_edit)).perform(replaceText("100.00"));
+
+        onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("CA$66.00"))));
+        onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("$100.00"))));
+        onView(withId(R.id.converted_currencies_recycler_view)).check(matches(hasDescendant(withText("£133.00"))));
+    }
+    @Test
+    public void onSwitchCurrencyNotSupported_shouldDisplayError() {
+        Mockito.when(mRateProvider.getConversionRates("GBP")).thenReturn(null);
+        onView(withId(R.id.base_currency_spinner)).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is("GBP"))).perform(click());
+
+        onView(withText("Cannot find conversion rate for GBP")).check(matches(isDisplayed()));
+    }
+
+    private List<ConversionRate> getMockCADRates() {
         List<ConversionRate> mockRates = new ArrayList<ConversionRate>();
         mockRates.add(new ConversionRate("CAD", BigDecimal.valueOf(1.0)));
         mockRates.add(new ConversionRate("USD", BigDecimal.valueOf(1.5)));
         mockRates.add(new ConversionRate("GBP", BigDecimal.valueOf(2.0)));
+        return mockRates;
+    }
+
+    private List<ConversionRate> getMockUSDRates() {
+        List<ConversionRate> mockRates = new ArrayList<ConversionRate>();
+        mockRates.add(new ConversionRate("CAD", BigDecimal.valueOf(0.66)));
+        mockRates.add(new ConversionRate("USD", BigDecimal.valueOf(1.0)));
+        mockRates.add(new ConversionRate("GBP", BigDecimal.valueOf(1.33)));
         return mockRates;
     }
 }

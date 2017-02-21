@@ -2,7 +2,7 @@
     <string name="app_name">Currency Conversion</string>
 
     <!--TODO: Remove Mock data -->
-    <string-array name="currency_names">
+    <string-array name="currency_code">
         <item>AUD</item>
         <item>CAD</item>
         <item>GBP</item>
