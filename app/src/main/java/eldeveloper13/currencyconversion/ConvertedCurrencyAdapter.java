@@ -7,21 +7,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-/**
- * Created by ericl on 2/20/2017.
- */
+import eldeveloper13.currencyconversion.utils.FormatUtil;
 
 public class ConvertedCurrencyAdapter extends RecyclerView.Adapter<ConvertedCurrencyAdapter.ConvertedCurrencyViewHolder> {
 
     private BigDecimal mBaseValue;
     private List<ConversionRate> mConversionRates;
-
+    private FormatUtil mFormatUtil = new FormatUtil();
     public ConvertedCurrencyAdapter(List<ConversionRate> conversionRates) {
         mBaseValue = BigDecimal.ZERO;
         mConversionRates = conversionRates;
@@ -38,7 +34,7 @@ public class ConvertedCurrencyAdapter extends RecyclerView.Adapter<ConvertedCurr
     public void onBindViewHolder(ConvertedCurrencyViewHolder holder, int position) {
         ConversionRate unit = mConversionRates.get(position);
         BigDecimal amount = mBaseValue.multiply(unit.getRate());
-        holder.mValueText.setText(NumberFormat.getCurrencyInstance().format(amount));
+        holder.mValueText.setText(mFormatUtil.getCurrencyFormat(unit.getSymbol()).format(amount));
         holder.mCurrencySymbol.setText(unit.getSymbol());
     }
 

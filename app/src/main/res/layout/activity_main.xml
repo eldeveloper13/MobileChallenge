@@ -23,6 +23,7 @@
             android:inputType="numberDecimal"
             android:gravity="right"
             android:hint="Enter the base value"
+            android:maxLength="15"
             android:text="0"/>
         <Spinner
             android:id="@+id/base_currency_spinner"
