@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import eldeveloper13.currencyconversion.data.CurrencyCodeProvider;
 import eldeveloper13.currencyconversion.data.RateProvider;
 
 @Module
@@ -25,4 +26,9 @@ public class MockAppModule {
         return Mockito.mock(RateProvider.class);
     }
 
+    @Provides
+    @Singleton
+    CurrencyCodeProvider providesCurrencCodeProvider() {
+        return Mockito.mock(CurrencyCodeProvider.class);
+    }
 }

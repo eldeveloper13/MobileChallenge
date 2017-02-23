@@ -34,7 +34,16 @@
                 android:id="@+id/base_currency_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"/>
+                android:layout_gravity="right"
+                android:layout_marginBottom="10dp"
+                />
+
+            <TextView
+                android:id="@+id/timestamp_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:textSize="8sp"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/converted_currencies_recycler_view"
@@ -42,4 +51,12 @@
                 android:layout_height="wrap_content"/>
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
+    <ProgressBar
+        android:id="@+id/loading_spinner"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        />
 </android.support.design.widget.CoordinatorLayout>

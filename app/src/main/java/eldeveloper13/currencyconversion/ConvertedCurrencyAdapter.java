@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -16,9 +17,10 @@ import eldeveloper13.currencyconversion.utils.FormatUtil;
 public class ConvertedCurrencyAdapter extends RecyclerView.Adapter<ConvertedCurrencyAdapter.ConvertedCurrencyViewHolder> {
 
     private BigDecimal mBaseValue;
-    private List<ConversionRate> mConversionRates;
+    private ConversionRates mConversionRates;
     private FormatUtil mFormatUtil = new FormatUtil();
-    public ConvertedCurrencyAdapter(List<ConversionRate> conversionRates) {
+
+    public ConvertedCurrencyAdapter(ConversionRates conversionRates) {
         mBaseValue = BigDecimal.ZERO;
         mConversionRates = conversionRates;
     }
@@ -32,15 +34,17 @@ public class ConvertedCurrencyAdapter extends RecyclerView.Adapter<ConvertedCurr
 
     @Override
     public void onBindViewHolder(ConvertedCurrencyViewHolder holder, int position) {
-        ConversionRate unit = mConversionRates.get(position);
-        BigDecimal amount = mBaseValue.multiply(unit.getRate());
-        holder.mValueText.setText(mFormatUtil.getCurrencyFormat(unit.getSymbol()).format(amount));
-        holder.mCurrencySymbol.setText(unit.getSymbol());
+        List<String> keys = new ArrayList<>(mConversionRates.getConversionRates().keySet());
+        String symbol = keys.get(position);
+        BigDecimal unit = mConversionRates.getConversionRates().get(symbol);
+        BigDecimal amount = mBaseValue.multiply(unit);
+        holder.mValueText.setText(mFormatUtil.getCurrencyFormat(symbol).format(amount));
+        holder.mCurrencySymbol.setText(symbol);
     }
 
     @Override
     public int getItemCount() {
-        return mConversionRates.size();
+        return mConversionRates.getConversionRates().size();
     }
 
     public void updateBaseValue(BigDecimal value) {
@@ -48,7 +52,7 @@ public class ConvertedCurrencyAdapter extends RecyclerView.Adapter<ConvertedCurr
         notifyDataSetChanged();
     }
 
-    public void updateConversion(List<ConversionRate> conversionRates){
+    public void updateConversion(ConversionRates conversionRates){
         mConversionRates = conversionRates;
         notifyDataSetChanged();
     }
