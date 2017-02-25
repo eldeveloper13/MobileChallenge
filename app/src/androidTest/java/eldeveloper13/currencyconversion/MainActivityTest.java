@@ -1,7 +1,9 @@
 package eldeveloper13.currencyconversion;
 
+import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -68,6 +70,7 @@ public class MainActivityTest {
         CurrencyConversionApplication app =
                 (CurrencyConversionApplication) instrumentation.getTargetContext().getApplicationContext();
         TestComponent component = (TestComponent) app.getAppComponent();
+
         component.inject(this);
 
         ConversionRates mockCADRates = getMockCADRates();
@@ -137,6 +140,31 @@ public class MainActivityTest {
         onView(withText("Cannot find conversion rate for GBP")).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void backgroundAndForegroundApp_shouldRetainValueAndCurrencyEntered() {
+        onView(withId(R.id.base_value_edit)).perform(replaceText("100.00"));
+        onView(withId(R.id.base_currency_spinner)).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is("USD"))).perform(click());
+
+        goHome(activityRule.getActivity());
+        bringToForeground(activityRule.getActivity());
+
+        onView(withId(R.id.base_value_edit)).check(matches(withText("100.00")));
+        onView(withId(R.id.base_currency_spinner)).check(matches(withSpinnerText(containsString("USD"))));
+    }
+
+    @Test
+    public void rotatePhone_shouldRetainValueAndCurrencyEntered() {
+        onView(withId(R.id.base_value_edit)).perform(replaceText("100.00"));
+        onView(withId(R.id.base_currency_spinner)).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is("USD"))).perform(click());
+
+        activityRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        onView(withId(R.id.base_value_edit)).check(matches(withText("100.00")));
+        onView(withId(R.id.base_currency_spinner)).check(matches(withSpinnerText(containsString("USD"))));
+    }
+
     private ConversionRates getMockCADRates() {
         LinkedHashMap<String, BigDecimal> mockRates = new LinkedHashMap<>();
         mockRates.put("CAD", BigDecimal.valueOf(1.0));
@@ -151,5 +179,18 @@ public class MainActivityTest {
         mockRates.put("USD", BigDecimal.valueOf(1.0));
         mockRates.put("GBP", BigDecimal.valueOf(1.33));
         return new ConversionRates(mockRates, new Date());
+    }
+
+    private void goHome(Activity activity) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        activity.startActivity(intent);
+    }
+
+    private void bringToForeground(Activity activity) {
+        Intent intent = new Intent(activity, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        activity.startActivity(intent);
     }
 }

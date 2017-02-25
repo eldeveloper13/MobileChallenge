@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -33,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.loading_spinner)
     ProgressBar mLoadingSpinner;
 
+    @BindView(R.id.base_value_edit)
+    EditText mBaseValueEdit;
+
     @BindView(R.id.timestamp_textview)
     TextView mTimeStampTextView;
 
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ConvertedCurrencyAdapter mConvertedAdapter;
     private ArrayAdapter mCurrencyCodeAdapter;
+    private BigDecimal mBaseValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,26 +67,33 @@ public class MainActivity extends AppCompatActivity {
         mCurrencyCodeAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, mCurrencyCodeProvider.getCurrencyCodes());
         mBaseCurrencySpinner.setAdapter(mCurrencyCodeAdapter);
 
+        if (savedInstanceState != null) {
+            mBaseValueEdit.setText(savedInstanceState.getString(Extra.BASE_VALUE));
+            int currencySelectedPosition = savedInstanceState.getInt(Extra.CURRENCY);
+            mBaseCurrencySpinner.setSelection(currencySelectedPosition);
+        } else {
+            mBaseValue = BigDecimal.ZERO;
+        }
+
         GridLayoutManager layoutManager = new GridLayoutManager(MainActivity.this, 3);
         mConvertedCurrenciesRecyclerView.setLayoutManager(layoutManager);
-//        updateConversionRate(mCurrencyCodeAdapter.getItem(0).toString());
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(Extra.BASE_VALUE, mBaseValueEdit.getText().toString());
+        outState.putInt(Extra.CURRENCY, mBaseCurrencySpinner.getSelectedItemPosition());
+        super.onSaveInstanceState(outState);
     }
 
     @OnTextChanged(value = R.id.base_value_edit, callback = OnTextChanged.Callback.TEXT_CHANGED)
     void onBaseValueChanged(CharSequence s) {
-        BigDecimal newValue = BigDecimal.ZERO;
         try {
-            newValue = new BigDecimal(s.toString());
+            mBaseValue = new BigDecimal(s.toString());
         } catch (NumberFormatException e) {
             // Ignore format error
         }
-        updateBaseValue(newValue);
+        updateBaseValue(mBaseValue);
     }
 
     @OnItemSelected(R.id.base_currency_spinner)
@@ -110,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     Snackbar.make(mTopview, String.format("Cannot find conversion rate for %s", currencyCode), Snackbar.LENGTH_LONG).show();
                 } else {
                     if (mConvertedAdapter == null) {
-                        mConvertedAdapter = new ConvertedCurrencyAdapter(conversionRates);
+                        mConvertedAdapter = new ConvertedCurrencyAdapter(conversionRates, mBaseValue);
                         mConvertedCurrenciesRecyclerView.setAdapter(mConvertedAdapter);
                     } else {
                         mConvertedAdapter.updateConversion(conversionRates);
@@ -122,6 +134,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateBaseValue(BigDecimal value) {
-        mConvertedAdapter.updateBaseValue(value);
+        if (mConvertedAdapter != null) {
+            mConvertedAdapter.updateBaseValue(value);
+        }
+    }
+
+    private static final class Extra {
+        private static final String BASE_VALUE = "base_value";
+        private static final String CURRENCY = "currency";
     }
 }

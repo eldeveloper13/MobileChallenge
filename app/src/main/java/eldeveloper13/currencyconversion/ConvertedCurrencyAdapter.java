@@ -20,8 +20,8 @@ public class ConvertedCurrencyAdapter extends RecyclerView.Adapter<ConvertedCurr
     private ConversionRates mConversionRates;
     private FormatUtil mFormatUtil = new FormatUtil();
 
-    public ConvertedCurrencyAdapter(ConversionRates conversionRates) {
-        mBaseValue = BigDecimal.ZERO;
+    public ConvertedCurrencyAdapter(ConversionRates conversionRates, BigDecimal baseValue) {
+        mBaseValue = baseValue;
         mConversionRates = conversionRates;
     }
 
